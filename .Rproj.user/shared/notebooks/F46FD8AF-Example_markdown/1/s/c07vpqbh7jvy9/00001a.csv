@@ -1,3 +1,0 @@
-"0","cuteSleepy %>% "
-"0","  ggplot(aes(precip)) +"
-"0","  geom_density(color=""darkblue"", fill=""lightblue"")"

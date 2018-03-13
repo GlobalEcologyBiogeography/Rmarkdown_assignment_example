@@ -1,1 +1,0 @@
-"0","plot(tempRast, xlim=c(min(cuteSleepy$lon)-1,max(cuteSleepy$lon)+1), ylim=c(min(cuteSleepy$lat)-1,max(cuteSleepy$lat)+1), axes=TRUE)"
