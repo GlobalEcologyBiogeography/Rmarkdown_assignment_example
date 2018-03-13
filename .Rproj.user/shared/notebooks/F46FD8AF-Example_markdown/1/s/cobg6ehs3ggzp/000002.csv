@@ -1,0 +1,7 @@
+"0","# Delete occurrence without geographic information"
+"0","cuteSleepy<-"
+"0","  cuteSleepy %>% "
+"0","  filter(!is.na(lon)&!is.na(lat))"
+"0","## Get rid of duplicate occurrences"
+"0","dups=duplicated(cuteSleepy[, c(""lon"", ""lat"")])"
+"0","cuteSleepy <-cuteSleepy[!dups, ]"
