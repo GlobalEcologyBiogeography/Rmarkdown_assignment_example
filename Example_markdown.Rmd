@@ -31,12 +31,14 @@ Presentations must include:
 4. A brief description of your data (e.g., table, map, plot showing the number of species, areas, etc.)
 5. Primary results and a brief discussion
 
+AVOID to include unnecessary code into the R markdown. Code for data downloading and cleaning should be incorporated into a separate R file. Start the document with the clean, processed and merge data. 
+
 # Project Rmarkdown
 
 # Example: Life history traits and distribution of Hyraxes
 
 ```{r libraries, message=FALSE, warning=FALSE}
-## Include here your libraries
+# Include here your libraries
 library(knitr)
 library(tidyverse)
 library(maptools)
@@ -73,7 +75,7 @@ Hyraxes_df %>%
 ### Data distribution
 
 ```{r}
-## Distribution
+# Distribution
 Hyraxes_df_geo<-Hyraxes_df
 coordinates(Hyraxes_df_geo)<-~lon + lat
 
