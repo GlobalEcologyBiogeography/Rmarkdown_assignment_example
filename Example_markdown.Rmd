@@ -1,188 +1,117 @@
 ---
-title: "Rmarkdown assignment"
-author: "Your name"
-output: 
-  html_document: 
+title: "Project presentations and rmarkdown example"
+output:
+  pdf_document:
     highlight: tango
-    theme: journal
+    number_sections: yes
     toc: yes
+  html_document:
+    highlight: tango
+    number_sections: yes
+    theme: cerulean
+    toc: yes
+    toc_float: yes
+urlcolor: blue    
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+# Project presentations
 
+Ignite format: 5 minutes presentations (20 slides, 15 seconds each)
 
-```{r libraries, include=FALSE}
+You can find some advice and examples [here](http://scottberkun.com/2009/how-to-give-a-great-ignite-talk/) and [here](http://scottberkun.com/2009/how-to-give-a-great-ignite-talk/)
+
+Presentations must include:
+
+1. Title
+2. Description of main aim or question
+3. Brief methods description (Main data sources and methods)
+4. A brief description of your data (e.g., table, map, plot showing the number of species, areas, etc.)
+5. Primary results and a brief discussion
+
+# Project Rmarkdown
+
+# Example: Life history traits and distribution of Hyraxes
+
+```{r libraries, message=FALSE, warning=FALSE}
 ## Include here your libraries
 library(knitr)
 library(tidyverse)
-
-```
-
-
-# Body size and lifestyle relationships among Amniotes
-##  Your question
-
-Describe here your question
-
-## Brief description of the methods
-
-Using the Amniote life-history [database](http://www.esapubs.org/archive/ecol/E096/269/#data), I ...
-
-```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
-download.file("http://www.esapubs.org/archive/ecol/E096/269/Data_Files/Amniote_Database_Aug_2015.csv
-", "./data/Amniote_Database_Aug_2015.csv")
-
-```
-
-
-```{r}
-# Read data
-Amniote<-read.csv("./data/Amniote_Database_Aug_2015.csv")
-
-# Explore data
-# View(Amniote)
-```
-
-```{r}
-# Note that Null values are listed as -999
-
-# Replace -999 for NAs
-Amniote[Amniote==-999]<-NA
-```
-
-
-## Data exploration
-
-### Number of species per class of Amniotes
-```{r}
-# Number species per class
-Amniote %>% 
-  group_by(class) %>% 
-  summarise(N_species=n_distinct(species)) %>% 
-  kable
-
-```
-
-
-### Number of species per order in Reptilia
-
-```{r}
-Amniote %>% 
-  filter(class=="Reptilia") %>% 
-  group_by(order) %>% 
-  summarise(N_species=n_distinct(species)) %>% 
-  kable
-
-```
-
-## Data visualization
-
-### Body size (in log base e) distribution of body size among groups of reptiles
-
-```{r message=FALSE, warning=FALSE}
-# Distribution of values of a specific variable among different groups
-# prepare a special xlab with the number of species for each group
-n_sp_order<-
-  Amniote %>% 
-  filter(class=="Reptilia") %>% 
-  group_by(order) %>% 
-  summarise(N_species=n_distinct(species))
-
-my_xlab <- paste(unique(n_sp_order$order),"\n(N=",n_sp_order$N_species,")",sep="")
- 
-# plot
-Amniote %>% 
-  filter(class=="Reptilia") %>% 
-  ggplot(aes(x=order, y=log(adult_body_mass_g), fill=order)) +
-  geom_boxplot(varwidth = TRUE, alpha=0.2) +
-  theme(legend.position="none") +
-  scale_x_discrete(labels=my_xlab) +
-  ylab("Body size [g] (log_e)") +
-  xlab("Reptilia order")
- 
-```
-
-# Spatial analysis 
-
-```{r include=FALSE}
-library(raster)
-library(sp)
-library(dismo)
 library(maptools)
+library(ggpubr)
+```
+
+## Introduction
+
+- A brief background
+- The main question or aim of the project
+
+## Methods
+
+- [Github repository link](https://github.com/GlobalEcologyBiogeography/Rmarkdown_assignment_example)
+- Data sources
+- Data cleaning and processing
+- Describe main procedures 
+- Data summary (how many species? which groups? how many records?...)
+
+### Data description
+
+```{r}
+## Data decription
+Hyraxes_df<-read.csv("data/processed/Hyracoidea_traits_geo.csv")
+
+Hyraxes_df %>% 
+  group_by(genus,species) %>% 
+  tally() %>% 
+  kable()
+
+
+```
+
+### Data distribution
+
+```{r}
+## Distribution
+Hyraxes_df_geo<-Hyraxes_df
+coordinates(Hyraxes_df_geo)<-~lon + lat
+
+# Get map and change projection
+data(wrld_simpl)
+proj4string(wrld_simpl)<-proj4string(Hyraxes_df_geo)
+
+# Colour vector
+cols<-c("#00AFBB", "#E7B800", "#FC4E07","grey")
+cols_sp<-cols[Hyraxes_df$Binomial]
+
+# Plot map and species distribution
+plot(wrld_simpl, xlim=c(min(Hyraxes_df$lon)-1,max(Hyraxes_df$lon)+1),
+     ylim=c(min(Hyraxes_df$lat)-1,max(Hyraxes_df$lat)+1), axes=TRUE, col="light yellow")
+
+points(Hyraxes_df_geo,col=cols_sp, pch=20)
+legend('bottomright', bty='n', legend=unique(Hyraxes_df$Binomial), 
+cex=0.8, fill=unique(cols_sp))
 ```
 
 
-## Species selection
-
-Name the two selected species. Here I am going to use the species _Bradypus variegatus_ as an example. Be aware that not all reptile species have records on GBIF. 
-
-## Occurrence data from gbif
+## Results and Discussion
 
 ```{r message=FALSE, warning=FALSE}
-cuteSleepy<-gbif("Bradypus","variegatus")
+p <- ggplot(Hyraxes_df, aes(temp, precip)) +
+  geom_point(aes(color = Binomial), size = 3, alpha = 0.7) +
+  scale_color_manual(values = c("#00AFBB", "#E7B800", "#FC4E07","grey"))+
+  xlab("Temperature C") +
+  ylab("Precipitation")
+
+# Grouped Scatter plot with marginal density plots
+ggscatterhist(
+  Hyraxes_df, x = "temp", y = "precip",
+  color = "Binomial", size = 3, alpha = 0.6,
+  palette = c("#00AFBB", "#E7B800", "#FC4E07","grey"),
+  margin.plot = "boxplot",
+  ggtheme = theme_bw()
+  )
 ```
 
-### Cleaning occurrence
-
-```{r}
-# Delete occurrence without geographic information
-cuteSleepy<-
-  cuteSleepy %>% 
-  filter(!is.na(lon)&!is.na(lat))
-
-## Get rid of duplicate occurrences
-dups=duplicated(cuteSleepy[, c("lon", "lat")])
-cuteSleepy <-cuteSleepy[!dups, ]
-```
-
-## Extract climatic variables
-
-```{r}
-# using the raster package
-bio_ly <- getData("worldclim",var="bio",res=10, path="./data/")
-
-tempRast <- bio_ly$bio1/10
-precipRast <- bio_ly$bio12
-
-
-##Convert Ocurrence data to spatial points 
-cuteSleepy_geo<-cuteSleepy
-coordinates(cuteSleepy_geo)<-~lon + lat
-
-## Changing projection (tempRast and precipiRast have the same projection)
-proj4string(cuteSleepy_geo)<-proj4string(tempRast)
-
-
-## Extracting Temperature and precipitation
-
-## using the expression 'raster::extract' make sure that the function that I am calling is from the raster package. Extract as a function is also found in the tidyr package.
-
-cuteSleepy$temp<-raster::extract(tempRast,cuteSleepy_geo)
-cuteSleepy$precip<-raster::extract(precipRast,cuteSleepy_geo)
-```
-
-
-## Plot species occurrences
-
-```{r}
-## Plotting climatic variable and coordinates
-new_map<-crop(tempRast,extent(cuteSleepy_geo))
-
-plot(new_map)
-points(cuteSleepy_geo,pch=20,col=alpha("blue",0.5))
-```
-
-
-## Species climatic distribution
-
-```{r}
-hist(cuteSleepy$temp)
-
-cuteSleepy %>% 
-  ggplot(aes(precip)) +
-  geom_density(color="darkblue", fill="lightblue")
-
-```
 
